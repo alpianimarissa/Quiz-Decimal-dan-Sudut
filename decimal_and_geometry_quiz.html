@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Decimals & Geometry Quiz</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#2563eb',
+                            600: '#1d4ed8',
+                            700: '#1e40af',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom smooth scrollbar & transition helpers */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .fade-in { animation: fadeIn 0.25s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="h-full font-sans text-slate-800 antialiased flex flex-col bg-slate-50">
+
+    <!-- Top Header Navigation -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 font-bold text-lg">
+                    ÷
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold text-slate-900 leading-tight">Decimals & Angles Quiz</h1>
+                    <p class="text-xs text-slate-500 hidden sm:block">40 Interactive Questions with Visual Diagrams</p>
+                </div>
+            </div>
+
+            <!-- Header Stats & Actions -->
+            <div class="flex items-center space-x-2 sm:space-x-4">
+                <div class="hidden md:flex items-center space-x-4 bg-slate-100 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600">
+                    <div>Progress: <span id="progress-text" class="text-blue-600 font-bold">0/40</span></div>
+                    <div class="h-3 w-px bg-slate-300"></div>
+                    <div>Score: <span id="score-text" class="text-emerald-600 font-bold">0 pts</span></div>
+                </div>
+
+                <button id="btn-show-summary" class="inline-flex items-center px-3 py-1.5 border border-slate-300 shadow-xs text-xs sm:text-sm font-medium rounded-lg text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 transition">
+                    <svg class="w-4 h-4 mr-1.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    Summary
+                </button>
+
+                <button id="btn-reset" class="inline-flex items-center px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg text-rose-700 bg-rose-50 hover:bg-rose-100 transition">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- Global Progress Bar -->
+        <div class="w-full bg-slate-100 h-1.5 overflow-hidden">
+            <div id="top-progress-bar" class="bg-gradient-to-r from-blue-500 to-indigo-600 h-1.5 transition-all duration-300 w-0"></div>
+        </div>
+    </header>
+
+    <!-- Main App Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Column: Filter & Question Navigator Sidebar (4 cols on lg) -->
+        <aside class="lg:col-span-4 flex flex-col space-y-4 order-2 lg:order-1">
+            
+            <!-- Restored Session Banner -->
+            <div id="restored-banner" class="hidden bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl flex items-center justify-between fade-in">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>Your previous quiz progress has been automatically restored.</span>
+                </div>
+                <button onclick="document.getElementById('restored-banner').classList.add('hidden')" class="text-amber-600 hover:text-amber-900 font-bold ml-2">✕</button>
+            </div>
+
+            <!-- Topic Filter Card -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+                <label for="topic-filter" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Filter by Topic</label>
+                <select id="topic-filter" class="w-full bg-slate-50 border border-slate-300 text-slate-700 text-sm rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                    <option value="ALL">All Topics (40 Questions)</option>
+                    <option value="Ordering Decimals">1. Ordering Decimals</option>
+                    <option value="Adding and Subtracting Decimals">2. Adding & Subtracting Decimals</option>
+                    <option value="Multiplying Decimals">3. Multiplying Decimals</option>
+                    <option value="Dividing Decimals">4. Dividing Decimals</option>
+                    <option value="Making Calculations Easier">5. Making Calculations Easier</option>
+                    <option value="Angles and Constructions">6. Angles & Constructions</option>
+                </select>
+            </div>
+
+            <!-- Question Grid Box -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex-1 flex flex-col">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500">Question Navigator</h2>
+                    <span id="nav-count-badge" class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-mono">40 Items</span>
+                </div>
+
+                <!-- Legend -->
+                <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-500 mb-3 bg-slate-50 p-2 rounded-xl">
+                    <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span><span>Correct</span></div>
+                    <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span><span>Incorrect</span></div>
+                    <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span><span>Flagged</span></div>
+                    <div class="flex items-center space-x-1.5"><span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span><span>Unanswered</span></div>
+                </div>
+
+                <!-- Number Grid -->
+                <div id="question-grid" class="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-5 gap-2 max-h-[320px] overflow-y-auto pr-1">
+                    <!-- Dynamic Grid Buttons generated via JS -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Column: Active Question Workspace (8 cols on lg) -->
+        <section class="lg:col-span-8 flex flex-col order-1 lg:order-2">
+            <div id="question-card" class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-7 flex-1 flex flex-col justify-between fade-in relative">
+                
+                <!-- Card Header -->
+                <div>
+                    <div class="flex items-center justify-between gap-2 mb-4">
+                        <span id="q-topic-badge" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                            Topic Name
+                        </span>
+                        <div class="flex items-center space-x-2">
+                            <button id="btn-flag" class="inline-flex items-center text-xs text-slate-400 hover:text-amber-500 font-medium transition px-2.5 py-1 rounded-lg border border-slate-200 hover:border-amber-300">
+                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg>
+                                <span id="flag-text">Flag</span>
+                            </button>
+                            <span id="q-number-indicator" class="text-xs font-mono font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">
+                                Q1 / 40
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Question Prompt -->
+                    <h2 id="q-text" class="text-base sm:text-xl font-bold text-slate-900 leading-snug mb-4">
+                        Question text goes here...
+                    </h2>
+
+                    <!-- Question Diagram Container (for SVG diagrams) -->
+                    <div id="q-diagram-container" class="hidden my-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl flex justify-center items-center overflow-x-auto">
+                        <!-- SVG graphic dynamically inserted -->
+                    </div>
+                </div>
+
+                <!-- Answer Choices Grid -->
+                <div id="options-container" class="space-y-3 my-6">
+                    <!-- Dynamically rendered options -->
+                </div>
+
+                <!-- Instant Feedback & Detailed Solution Card -->
+                <div id="feedback-box" class="hidden mb-6 p-4 rounded-2xl border fade-in">
+                    <div class="flex items-start space-x-3">
+                        <div id="feedback-icon" class="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                            <!-- Icon -->
+                        </div>
+                        <div class="flex-1">
+                            <h3 id="feedback-title" class="text-sm font-bold leading-tight"></h3>
+                            <p id="feedback-explanation" class="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed font-sans"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Action Controls -->
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+                    <button id="btn-prev" class="inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                        Previous
+                    </button>
+
+                    <div class="flex items-center space-x-2">
+                        <button id="btn-next" class="inline-flex items-center px-5 py-2 rounded-xl text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-500/20 disabled:opacity-40 disabled:cursor-not-allowed transition">
+                            Next
+                            <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Quiz Summary & Score Modal -->
+    <div id="summary-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden fade-in">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Quiz Summary & Performance
+                </h3>
+                <button id="modal-close" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">✕</button>
+            </div>
+
+            <div class="overflow-y-auto py-6 space-y-6 flex-1 pr-1">
+                <!-- Overall Score Banner -->
+                <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 text-white text-center shadow-lg">
+                    <p class="text-xs uppercase tracking-widest font-semibold text-blue-200">Total Score</p>
+                    <p id="modal-score-percent" class="text-4xl sm:text-5xl font-extrabold my-1">0%</p>
+                    <p id="modal-score-detail" class="text-sm text-blue-100 font-medium">0 out of 40 questions correct</p>
+                </div>
+
+                <!-- Topic Breakdown Cards -->
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Performance by Topic</h4>
+                    <div id="topic-breakdown-list" class="space-y-2.5">
+                        <!-- Dynamic topic score bars -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div class="border-t border-slate-100 pt-4 flex flex-col sm:flex-row gap-3 justify-end">
+                <button id="modal-btn-review" class="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition">
+                    Back to Quiz
+                </button>
+                <button id="modal-btn-reset" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-rose-600 text-white font-semibold text-sm hover:bg-rose-700 transition">
+                    Reset & Retake Quiz
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * 40 Questions Dataset covering:
+         * 1. Ordering decimals
+         * 2. Adding and subtracting decimals
+         * 3. Multiplying decimals
+         * 4. Dividing decimals
+         * 5. Making decimals calculations easier
+         * 6. Angles and constructions (with SVG graphics)
+         */
+        const quizData = [
+            // TOPIC 1: ORDERING DECIMALS (Questions 1 to 6)
+            {
+                id: 1,
+                topic: "Ordering Decimals",
+                question: "Which of the following lists of numbers is correctly ordered from smallest to largest?",
+                options: [
+                    "0.045, 0.4, 0.405, 0.45",
+                    "0.4, 0.045, 0.405, 0.45",
+                    "0.045, 0.405, 0.4, 0.45",
+                    "0.45, 0.405, 0.4, 0.045"
+                ],
+                answer: 0,
+                explanation: "Pad with zeros to compare equal decimal places: 0.045, 0.400, 0.405, 0.450. Comparing place values: 45 thousandths < 400 thousandths < 405 thousandths < 450 thousandths."
+            },
+            {
+                id: 2,
+                topic: "Ordering Decimals",
+                question: "Four athletes completed a sprint in 12.35 s, 12.03 s, 12.305 s, and 12.035 s. Which runner recorded the fastest time?",
+                options: [
+                    "12.035 s",
+                    "12.03 s",
+                    "12.305 s",
+                    "12.35 s"
+                ],
+                answer: 1,
+                explanation: "The fastest time is the smallest number. Comparing 12.030 s, 12.035 s, 12.305 s, and 12.350 s shows that 12.03 s is the smallest decimal."
+            },
+            {
+                id: 3,
+                topic: "Ordering Decimals",
+                question: "Which inequality statement is completely mathematically TRUE?",
+                options: [
+                    "3.08 > 3.10",
+                    "5.602 < 5.62",
+                    "0.79 = 0.079",
+                    "1.405 > 1.45"
+                ],
+                answer: 1,
+                explanation: "Comparing 5.602 and 5.620: in the hundredths place, 0 is less than 2, so 5.602 < 5.62 is correct."
+            },
+            {
+                id: 4,
+                topic: "Ordering Decimals",
+                question: "Which decimal lies strictly between 0.72 and 0.73 on a standard number line?",
+                options: [
+                    "0.719",
+                    "0.732",
+                    "0.726",
+                    "0.703"
+                ],
+                answer: 2,
+                explanation: "0.72 can be written as 0.720 and 0.73 as 0.730. The value 0.726 lies between 0.720 and 0.730."
+            },
+            {
+                id: 5,
+                topic: "Ordering Decimals",
+                question: "Arrange the lengths 2.8 m, 2.08 m, 2.808 m, and 2.88 m in descending order (largest to smallest).",
+                options: [
+                    "2.88 m, 2.808 m, 2.8 m, 2.08 m",
+                    "2.88 m, 2.8 m, 2.808 m, 2.08 m",
+                    "2.08 m, 2.8 m, 2.808 m, 2.88 m",
+                    "2.808 m, 2.88 m, 2.8 m, 2.08 m"
+                ],
+                answer: 0,
+                explanation: "Aligning place values with three decimal places: 2.880 m > 2.808 m > 2.800 m > 2.080 m."
+            },
+            {
+                id: 6,
+                topic: "Ordering Decimals",
+                question: "How does the value of the digit '7' in 4.079 compare to the value of the digit '7' in 0.74?",
+                options: [
+                    "It is 10 times larger",
+                    "It is equal in both numbers",
+                    "It is 1/10 of the value",
+                    "It is 1/100 of the value"
+                ],
+                answer: 2,
+                explanation: "In 4.079, the '7' is in the hundredths place (0.07). In 0.74, the '7' is in the tenths place (0.7). Since 0.07 ÷ 0.7 = 1/10, its value in 4.079 is one-tenth of its value in 0.74."
+            },
+
+            // TOPIC 2: ADDING AND SUBTRACTING DECIMALS (Questions 7 to 13)
+            {
+                id: 7,
+                topic: "Adding and Subtracting Decimals",
+                question: "Calculate: 14.85 + 27.392 - 8.17",
+                options: [
+                    "34.072",
+                    "33.972",
+                    "34.172",
+                    "35.072"
+                ],
+                answer: 0,
+                explanation: "First, 14.850 + 27.392 = 42.242. Next, 42.242 - 8.170 = 34.072."
+            },
+            {
+                id: 8,
+                topic: "Adding and Subtracting Decimals",
+                question: "Maya bought items costing $12.45, $3.80, and $0.95. She paid using a $20 banknote. How much change should she receive?",
+                options: [
+                    " $3.20",
+                    " $2.80",
+                    " $2.20",
+                    " $17.20"
+                ],
+                answer: 1,
+                explanation: "Total cost = $12.45 + $3.80 + $0.95 = $17.20. Change = $20.00 - $17.20 = $2.80."
+            },
+            {
+                id: 9,
+                topic: "Adding and Subtracting Decimals",
+                question: "Find the missing decimal value in the equation: 45.2 - _____ = 18.64",
+                options: [
+                    "26.56",
+                    "26.64",
+                    "27.56",
+                    "63.84"
+                ],
+                answer: 0,
+                explanation: "Subtract 18.64 from 45.20: 45.20 - 18.64 = 26.56."
+            },
+            {
+                id: 10,
+                topic: "Adding and Subtracting Decimals",
+                question: "A triangular garden plot has sides measuring 6.45 m, 8.2 m, and 5.38 m. What is the total perimeter of the garden?",
+                options: [
+                    "20.03 m",
+                    "19.93 m",
+                    "20.30 m",
+                    "19.03 m"
+                ],
+                answer: 0,
+                explanation: "Perimeter = 6.45 m + 8.20 m + 5.38 m = 20.03 m."
+            },
+            {
+                id: 11,
+                topic: "Adding and Subtracting Decimals",
+                question: "Alex ran 3.75 km on Monday and 4.8 km on Tuesday. How many more kilometers did he run on Tuesday than on Monday?",
+                options: [
+                    "1.05 km",
+                    "1.15 km",
+                    "8.55 km",
+                    "0.95 km"
+                ],
+                answer: 0,
+                explanation: "Difference = 4.80 km - 3.75 km = 1.05 km."
+            },
+            {
+                id: 12,
+                topic: "Adding and Subtracting Decimals",
+                question: "Evaluate: 100 - 34.685",
+                options: [
+                    "65.315",
+                    "66.315",
+                    "65.415",
+                    "65.325"
+                ],
+                answer: 0,
+                explanation: "Align decimals: 100.000 - 34.685 = 65.315."
+            },
+            {
+                id: 13,
+                topic: "Adding and Subtracting Decimals",
+                question: "Three parcel packages weigh 2.45 kg, 0.875 kg, and 1.3 kg respectively. What is their combined total weight?",
+                options: [
+                    "4.625 kg",
+                    "4.525 kg",
+                    "3.625 kg",
+                    "4.635 kg"
+                ],
+                answer: 0,
+                explanation: "Summing 2.450 + 0.875 + 1.300 = 4.625 kg."
+            },
+
+            // TOPIC 3: MULTIPLYING DECIMALS (Questions 14 to 20)
+            {
+                id: 14,
+                topic: "Multiplying Decimals",
+                question: "Calculate: 0.08 × 0.7",
+                options: [
+                    "0.056",
+                    "0.56",
+                    "0.0056",
+                    "5.6"
+                ],
+                answer: 0,
+                explanation: "Multiply non-zero numbers: 8 × 7 = 56. Count total decimal places: 2 (in 0.08) + 1 (in 0.7) = 3 decimal places. Result = 0.056."
+            },
+            {
+                id: 15,
+                topic: "Multiplying Decimals",
+                question: "What is 4.25 × 1000?",
+                options: [
+                    "4250",
+                    "425",
+                    "42500",
+                    "0.00425"
+                ],
+                answer: 0,
+                explanation: "Multiplying by 1000 shifts the decimal point 3 places to the right: 4.25 -> 4250."
+            },
+            {
+                id: 16,
+                topic: "Multiplying Decimals",
+                question: "A fabric costs $6.40 per meter. How much will 3.5 meters of this fabric cost?",
+                options: [
+                    " $22.40",
+                    " $21.20",
+                    " $22.80",
+                    " $24.00"
+                ],
+                answer: 0,
+                explanation: "6.40 × 3.5 = 22.40."
+            },
+            {
+                id: 17,
+                topic: "Multiplying Decimals",
+                question: "Evaluate: 12.4 × 0.05",
+                options: [
+                    "0.62",
+                    "6.2",
+                    "0.062",
+                    "62"
+                ],
+                answer: 0,
+                explanation: "124 × 5 = 620. Total decimal places = 1 + 2 = 3 decimal places. So 0.620 = 0.62."
+            },
+            {
+                id: 18,
+                topic: "Multiplying Decimals",
+                question: "Find the area of a rectangular tabletop with length 7.2 cm and width 3.6 cm.",
+                options: [
+                    "25.92 cm²",
+                    "21.60 cm²",
+                    "25.22 cm²",
+                    "26.12 cm²"
+                ],
+                answer: 0,
+                explanation: "Area = Length × Width = 7.2 × 3.6 = 25.92 cm²."
+            },
+            {
+                id: 19,
+                topic: "Multiplying Decimals",
+                question: "If a vehicle consumes 0.075 liters of fuel per kilometer, how much fuel is consumed over a 120 km trip?",
+                options: [
+                    "9 liters",
+                    "9.5 liters",
+                    "7.5 liters",
+                    "12 liters"
+                ],
+                answer: 0,
+                explanation: "0.075 × 120 = (75 × 120) / 1000 = 9000 / 1000 = 9 liters."
+            },
+            {
+                id: 20,
+                topic: "Multiplying Decimals",
+                question: "What is the square of 0.12 (i.e. 0.12 × 0.12)?",
+                options: [
+                    "0.0144",
+                    "0.144",
+                    "0.00144",
+                    "1.44"
+                ],
+                answer: 0,
+                explanation: "12 × 12 = 144. With 2 + 2 = 4 decimal places, 0.12 × 0.12 = 0.0144."
+            },
+
+            // TOPIC 4: DIVIDING DECIMALS (Questions 21 to 27)
+            {
+                id: 21,
+                topic: "Dividing Decimals",
+                question: "Solve: 15.6 ÷ 0.3",
+                options: [
+                    "52",
+                    "5.2",
+                    "0.52",
+                    "520"
+                ],
+                answer: 0,
+                explanation: "Multiply numerator and denominator by 10 to make divisor a whole number: 156 ÷ 3 = 52."
+            },
+            {
+                id: 22,
+                topic: "Dividing Decimals",
+                question: "Calculate: 4.82 ÷ 100",
+                options: [
+                    "0.0482",
+                    "0.482",
+                    "482",
+                    "0.00482"
+                ],
+                answer: 0,
+                explanation: "Dividing by 100 shifts the decimal point 2 places to the left: 0.0482."
+            },
+            {
+                id: 23,
+                topic: "Dividing Decimals",
+                question: "Evaluate: 7.2 ÷ 0.08",
+                options: [
+                    "90",
+                    "9",
+                    "900",
+                    "0.9"
+                ],
+                answer: 0,
+                explanation: "Multiply numerator and denominator by 100: (7.2 × 100) / (0.08 × 100) = 720 ÷ 8 = 90."
+            },
+            {
+                id: 24,
+                topic: "Dividing Decimals",
+                question: "A ribbon measuring 9.45 meters in length is divided into 5 equal parts. How long is each part?",
+                options: [
+                    "1.89 m",
+                    "1.95 m",
+                    "1.79 m",
+                    "2.09 m"
+                ],
+                answer: 0,
+                explanation: "9.45 ÷ 5 = 1.89 meters."
+            },
+            {
+                id: 25,
+                topic: "Dividing Decimals",
+                question: "Evaluate: 0.63 ÷ 0.009",
+                options: [
+                    "70",
+                    "7",
+                    "700",
+                    "0.7"
+                ],
+                answer: 0,
+                explanation: "Shift decimal point 3 places right in both numbers: 630 ÷ 9 = 70."
+            },
+            {
+                id: 26,
+                topic: "Dividing Decimals",
+                question: "A prize of $87.50 is shared equally among 4 friends. How much does each person receive?",
+                options: [
+                    " $21.875",
+                    " $21.50",
+                    " $22.25",
+                    " $21.90"
+                ],
+                answer: 0,
+                explanation: "87.50 ÷ 4 = 21.875 (which rounds to $21.88 in currency practice)."
+            },
+            {
+                id: 27,
+                topic: "Dividing Decimals",
+                question: "Solve for x in the equation: 0.4x = 1.28",
+                options: [
+                    "3.2",
+                    "0.32",
+                    "32",
+                    "3.02"
+                ],
+                answer: 0,
+                explanation: "x = 1.28 ÷ 0.4 = 12.8 ÷ 4 = 3.2."
+            },
+
+            // TOPIC 5: MAKING CALCULATIONS EASIER (Questions 28 to 33)
+            {
+                id: 28,
+                topic: "Making Calculations Easier",
+                question: "Which mental strategy simplifies computing 4.8 × 25 easily without long multiplication?",
+                options: [
+                    "Divide 4.8 by 4, then multiply by 100",
+                    "Multiply 4.8 by 20 and add 5",
+                    "Round 4.8 to 5 and subtract 0.2 × 25",
+                    "Both 1 and 3 are valid techniques"
+                ],
+                answer: 3,
+                explanation: "Since 25 = 100/4, 4.8 × 25 = (4.8 ÷ 4) × 100 = 1.2 × 100 = 120. Alternatively, (5 - 0.2) × 25 = 125 - 5 = 120. Both are efficient strategies!"
+            },
+            {
+                id: 29,
+                topic: "Making Calculations Easier",
+                question: "Estimate the product of 29.8 × 4.1 by rounding each number to 1 significant figure.",
+                options: [
+                    "120",
+                    "150",
+                    "100",
+                    "1200"
+                ],
+                answer: 0,
+                explanation: "Rounding to 1 sig fig gives 30 × 4 = 120."
+            },
+            {
+                id: 30,
+                topic: "Making Calculations Easier",
+                question: "Using the distributive law 7.6 × 9.9 = 7.6 × (10 - 0.1), what is the exact product?",
+                options: [
+                    "75.24",
+                    "75.34",
+                    "74.24",
+                    "76.24"
+                ],
+                answer: 0,
+                explanation: "7.6 × 10 - 7.6 × 0.1 = 76 - 0.76 = 75.24."
+            },
+            {
+                id: 31,
+                topic: "Making Calculations Easier",
+                question: "Using the 'doubling and halving' strategy, how can 3.5 × 18 be rewritten to simplify mental calculation?",
+                options: [
+                    "7 × 9 = 63",
+                    "3.5 × 20 - 7",
+                    "3.5 × 10 + 3.5 × 8",
+                    "7 × 18 = 126"
+                ],
+                answer: 0,
+                explanation: "Double 3.5 to 7 and halve 18 to 9: 3.5 × 18 becomes 7 × 9 = 63."
+            },
+            {
+                id: 32,
+                topic: "Making Calculations Easier",
+                question: "What is the best quick estimate for 198.4 ÷ 4.85 using compatible round numbers?",
+                options: [
+                    "40",
+                    "50",
+                    "30",
+                    "400"
+                ],
+                answer: 0,
+                explanation: "Round 198.4 to 200 and 4.85 to 5. 200 ÷ 5 = 40."
+            },
+            {
+                id: 33,
+                topic: "Making Calculations Easier",
+                question: "To calculate 15.7 + 9.8 using compensation, you can add 10 to 15.7 and then:",
+                options: [
+                    "Subtract 0.2",
+                    "Add 0.2",
+                    "Subtract 0.8",
+                    "Multiply by 0.2"
+                ],
+                answer: 0,
+                explanation: "Since 9.8 = 10 - 0.2, add 10 to get 25.7, then subtract 0.2 to get 25.5."
+            },
+
+            // TOPIC 6: ANGLES AND CONSTRUCTIONS (Questions 34 to 40 with custom SVGs)
+            {
+                id: 34,
+                topic: "Angles and Constructions",
+                question: "In the diagram below, a straight line is divided into two adjacent angles. Find the value of angle x.",
+                diagramSvg: `
+                    <svg viewBox="0 0 300 120" class="w-full max-w-xs h-auto">
+                        <line x1="20" y1="90" x2="280" y2="90" stroke="#334155" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="150" y1="90" x2="210" y2="20" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M 190 90 A 40 40 0 0 0 150 50" fill="none" stroke="#2563eb" stroke-width="2"/>
+                        <path d="M 150 50 A 40 40 0 0 0 110 90" fill="none" stroke="#e11d48" stroke-width="2"/>
+                        <text x="175" y="75" font-size="12" fill="#2563eb" font-weight="bold">124°</text>
+                        <text x="120" y="75" font-size="14" fill="#e11d48" font-weight="bold">x</text>
+                        <circle cx="150" cy="90" r="4" fill="#0f172a"/>
+                    </svg>
+                `,
+                options: [
+                    "56°",
+                    "66°",
+                    "124°",
+                    "180°"
+                ],
+                answer: 0,
+                explanation: "Angles on a straight line add up to 180°. Therefore, x = 180° - 124° = 56°."
+            },
+            {
+                id: 35,
+                topic: "Angles and Constructions",
+                question: "Two parallel lines are cut by a transversal line. Find the value of alternate interior angle y.",
+                diagramSvg: `
+                    <svg viewBox="0 0 300 140" class="w-full max-w-xs h-auto">
+                        <line x1="20" y1="40" x2="280" y2="40" stroke="#334155" stroke-width="2.5"/>
+                        <line x1="20" y1="100" x2="280" y2="100" stroke="#334155" stroke-width="2.5"/>
+                        <line x1="70" y1="120" x2="230" y2="20" stroke="#2563eb" stroke-width="2.5"/>
+                        <!-- Parallel arrows -->
+                        <path d="M 240 35 L 248 40 L 240 45" fill="none" stroke="#334155" stroke-width="2"/>
+                        <path d="M 240 95 L 248 100 L 240 105" fill="none" stroke="#334155" stroke-width="2"/>
+                        <!-- Angles -->
+                        <text x="170" y="32" font-size="13" fill="#059669" font-weight="bold">68°</text>
+                        <text x="125" y="118" font-size="14" fill="#e11d48" font-weight="bold">y</text>
+                    </svg>
+                `,
+                options: [
+                    "68°",
+                    "112°",
+                    "22°",
+                    "180°"
+                ],
+                answer: 0,
+                explanation: "Alternate interior angles between parallel lines are equal. Thus, y = 68°."
+            },
+            {
+                id: 36,
+                topic: "Angles and Constructions",
+                question: "Line segment BD bisects angle ABC. If the total measure of angle ABC is 74°, what is the measure of angle ABD?",
+                diagramSvg: `
+                    <svg viewBox="0 0 300 130" class="w-full max-w-xs h-auto">
+                        <line x1="50" y1="110" x2="250" y2="110" stroke="#334155" stroke-width="2.5"/>
+                        <line x1="50" y1="110" x2="190" y2="20" stroke="#334155" stroke-width="2.5"/>
+                        <line x1="50" y1="110" x2="240" y2="65" stroke="#2563eb" stroke-width="2" stroke-dasharray="4,4"/>
+                        <text x="35" y="125" font-size="12" font-weight="bold">B</text>
+                        <text x="255" y="120" font-size="12" font-weight="bold">C</text>
+                        <text x="195" y="15" font-size="12" font-weight="bold">A</text>
+                        <text x="248" y="65" font-size="12" font-weight="bold" fill="#2563eb">D</text>
+                    </svg>
+                `,
+                options: [
+                    "37°",
+                    "148°",
+                    "32°",
+                    "74°"
+                ],
+                answer: 0,
+                explanation: "An angle bisector divides an angle into two equal parts. So angle ABD = 74° ÷ 2 = 37°."
+            },
+            {
+                id: 37,
+                topic: "Angles and Constructions",
+                question: "Two complementary angles sum to 90°. In the right-angle diagram, find the value of angle z.",
+                diagramSvg: `
+                    <svg viewBox="0 0 250 140" class="w-full max-w-xs h-auto">
+                        <path d="M 40 20 L 40 110 L 220 110" fill="none" stroke="#334155" stroke-width="3"/>
+                        <line x1="40" y1="110" x2="170" y2="30" stroke="#2563eb" stroke-width="2.5"/>
+                        <rect x="40" y="95" width="15" height="15" fill="none" stroke="#64748b" stroke-width="1.5"/>
+                        <text x="75" y="70" font-size="13" fill="#059669" font-weight="bold">38°</text>
+                        <text x="90" y="102" font-size="14" fill="#e11d48" font-weight="bold">z</text>
+                    </svg>
+                `,
+                options: [
+                    "52°",
+                    "142°",
+                    "42°",
+                    "62°"
+                ],
+                answer: 0,
+                explanation: "Complementary angles add up to 90°. Therefore, z = 90° - 38° = 52°."
+            },
+            {
+                id: 38,
+                topic: "Angles and Constructions",
+                question: "When constructing a perpendicular bisector of line segment AB using a pair of compasses, what setting must be used for the compass radius?",
+                diagramSvg: `
+                    <svg viewBox="0 0 300 130" class="w-full max-w-xs h-auto">
+                        <line x1="50" y1="70" x2="250" y2="70" stroke="#334155" stroke-width="3"/>
+                        <circle cx="50" cy="70" r="3" fill="#0f172a"/>
+                        <circle cx="250" cy="70" r="3" fill="#0f172a"/>
+                        <text x="45" y="90" font-size="12" font-weight="bold">A</text>
+                        <text x="245" y="90" font-size="12" font-weight="bold">B</text>
+                        <!-- Compass Arcs -->
+                        <path d="M 130 20 A 110 110 0 0 1 130 120" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="3,3"/>
+                        <path d="M 170 20 A 110 110 0 0 0 170 120" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="3,3"/>
+                        <line x1="150" y1="15" x2="150" y2="125" stroke="#e11d48" stroke-width="2"/>
+                    </svg>
+                `,
+                options: [
+                    "More than half the length of AB",
+                    "Exactly the full length of AB",
+                    "Less than half the length of AB",
+                    "Any arbitrary small distance"
+                ],
+                answer: 0,
+                explanation: "To guarantee that the construction arcs intersect above and below the line segment, the compass width must be set to more than half the length of segment AB."
+            },
+            {
+                id: 39,
+                topic: "Angles and Constructions",
+                question: "The diagram shows angles meeting at a single point. Find the value of angle z.",
+                diagramSvg: `
+                    <svg viewBox="0 0 250 160" class="w-full max-w-xs h-auto">
+                        <circle cx="125" cy="80" r="4" fill="#0f172a"/>
+                        <line x1="125" y1="80" x2="210" y2="80" stroke="#334155" stroke-width="2"/>
+                        <line x1="125" y1="80" x2="125" y2="15" stroke="#334155" stroke-width="2"/>
+                        <line x1="125" y1="80" x2="40" y2="130" stroke="#334155" stroke-width="2"/>
+                        <line x1="125" y1="80" x2="190" y2="140" stroke="#334155" stroke-width="2"/>
+                        <text x="145" y="50" font-size="12" font-weight="bold" fill="#2563eb">110°</text>
+                        <text x="75" y="90" font-size="12" font-weight="bold" fill="#059669">85°</text>
+                        <text x="110" y="130" font-size="12" font-weight="bold" fill="#d97706">95°</text>
+                        <text x="155" y="110" font-size="14" font-weight="bold" fill="#e11d48">z</text>
+                    </svg>
+                `,
+                options: [
+                    "70°",
+                    "80°",
+                    "90°",
+                    "60°"
+                ],
+                answer: 0,
+                explanation: "Angles around a point sum to 360°. z = 360° - (110° + 85° + 95°) = 360° - 290° = 70°."
+            },
+            {
+                id: 40,
+                topic: "Angles and Constructions",
+                question: "In the triangle below, two interior angles are 55° and 65°. Calculate the third interior angle w.",
+                diagramSvg: `
+                    <svg viewBox="0 0 260 130" class="w-full max-w-xs h-auto">
+                        <polygon points="30,110 230,110 140,20" fill="none" stroke="#334155" stroke-width="2.5"/>
+                        <text x="50" y="102" font-size="12" font-weight="bold" fill="#2563eb">55°</text>
+                        <text x="190" y="102" font-size="12" font-weight="bold" fill="#059669">65°</text>
+                        <text x="133" y="45" font-size="14" font-weight="bold" fill="#e11d48">w</text>
+                    </svg>
+                `,
+                options: [
+                    "60°",
+                    "50°",
+                    "70°",
+                    "120°"
+                ],
+                answer: 0,
+                explanation: "The sum of interior angles in a triangle is 180°. w = 180° - (55° + 65°) = 180° - 120° = 60°."
+            }
+        ];
+
+        // Quiz Application State Object
+        const STORAGE_KEY = "decimals_quiz_state_v1";
+
+        let state = {
+            currentIndex: 0,
+            answers: {}, // map question id -> chosen option index
+            flagged: {}, // map question id -> boolean
+            topicFilter: "ALL",
+            shuffledQuestions: []
+        };
+
+        /**
+         * Balance answer choices so options A, B, C, D are evenly distributed and randomized
+         */
+        function initializeShuffledQuestions() {
+            // Deep clone questions so original array is untouched
+            state.shuffledQuestions = quizData.map((q) => {
+                const originalCorrectOptionText = q.options[q.answer];
+                // Make option objects with text
+                let opts = q.options.map((optText, index) => ({
+                    text: optText,
+                    isCorrect: index === q.answer
+                }));
+
+                // Simple deterministic shuffle per question ID for consistency
+                for (let i = opts.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.abs(Math.sin(q.id * 997 + i)) * (i + 1));
+                    [opts[i], opts[j]] = [opts[j], opts[i]];
+                }
+
+                const newCorrectIndex = opts.findIndex(o => o.isCorrect);
+
+                return {
+                    ...q,
+                    options: opts.map(o => o.text),
+                    answer: newCorrectIndex
+                };
+            });
+        }
+
+        /**
+         * Load persistent state from localStorage
+         */
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && typeof parsed === "object") {
+                        state.answers = parsed.answers || {};
+                        state.flagged = parsed.flagged || {};
+                        state.currentIndex = parsed.currentIndex || 0;
+                        document.getElementById('restored-banner').classList.remove('hidden');
+                    }
+                }
+            } catch (e) {
+                console.warn("Unable to load state from localStorage", e);
+            }
+        }
+
+        /**
+         * Save current state to localStorage for offline / refresh resilience
+         */
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    answers: state.answers,
+                    flagged: state.flagged,
+                    currentIndex: state.currentIndex
+                }));
+            } catch (e) {
+                console.warn("Unable to save state", e);
+            }
+        }
+
+        /**
+         * Get filtered subset of questions based on active dropdown filter
+         */
+        function getFilteredQuestions() {
+            if (state.topicFilter === "ALL") {
+                return state.shuffledQuestions;
+            }
+            return state.shuffledQuestions.filter(q => q.topic === state.topicFilter);
+        }
+
+        /**
+         * Render Navigator Grid
+         */
+        function renderNavigatorGrid() {
+            const gridEl = document.getElementById("question-grid");
+            gridEl.innerHTML = "";
+            const filtered = getFilteredQuestions();
+
+            document.getElementById("nav-count-badge").innerText = `${filtered.length} Items`;
+
+            filtered.forEach((q, idx) => {
+                const isCurrent = (q.id === state.shuffledQuestions[state.currentIndex]?.id);
+                const userAnswer = state.answers[q.id];
+                const isAnswered = userAnswer !== undefined;
+                const isCorrect = isAnswered && (userAnswer === q.answer);
+                const isFlagged = !!state.flagged[q.id];
+
+                const btn = document.createElement("button");
+                btn.className = `h-9 w-full rounded-xl text-xs font-bold transition flex items-center justify-center relative border ${
+                    isCurrent ? 'ring-2 ring-blue-600 ring-offset-1 z-10' : ''
+                }`;
+
+                if (isAnswered) {
+                    if (isCorrect) {
+                        btn.classList.add("bg-emerald-500", "text-white", "border-emerald-600");
+                    } else {
+                        btn.classList.add("bg-rose-500", "text-white", "border-rose-600");
+                    }
+                } else {
+                    btn.classList.add("bg-slate-100", "text-slate-700", "hover:bg-slate-200", "border-slate-200");
+                }
+
+                // Add Flag indicator dot
+                if (isFlagged) {
+                    const dot = document.createElement("span");
+                    dot.className = "absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 border border-white rounded-full";
+                    btn.appendChild(dot);
+                }
+
+                const label = document.createElement("span");
+                label.innerText = q.id;
+                btn.appendChild(label);
+
+                btn.onclick = () => {
+                    const mainIdx = state.shuffledQuestions.findIndex(item => item.id === q.id);
+                    if (mainIdx !== -1) {
+                        state.currentIndex = mainIdx;
+                        saveState();
+                        renderCurrentQuestion();
+                        renderNavigatorGrid();
+                    }
+                };
+
+                gridEl.appendChild(btn);
+            });
+        }
+
+        /**
+         * Render Active Question Details
+         */
+        function renderCurrentQuestion() {
+            const currentQ = state.shuffledQuestions[state.currentIndex];
+            if (!currentQ) return;
+
+            // Topic badge & Q indicator
+            document.getElementById("q-topic-badge").innerText = currentQ.topic;
+            document.getElementById("q-number-indicator").innerText = `Q${currentQ.id} / ${quizData.length}`;
+            
+            // Flag state
+            const isFlagged = !!state.flagged[currentQ.id];
+            const flagBtn = document.getElementById("btn-flag");
+            const flagText = document.getElementById("flag-text");
+            if (isFlagged) {
+                flagBtn.className = "inline-flex items-center text-xs text-amber-600 bg-amber-50 font-bold transition px-2.5 py-1 rounded-lg border border-amber-300";
+                flagText.innerText = "Flagged";
+            } else {
+                flagBtn.className = "inline-flex items-center text-xs text-slate-400 hover:text-amber-500 font-medium transition px-2.5 py-1 rounded-lg border border-slate-200 hover:border-amber-300";
+                flagText.innerText = "Flag";
+            }
+
+            // Question Text
+            document.getElementById("q-text").innerText = currentQ.question;
+
+            // Diagram rendering
+            const diagramContainer = document.getElementById("q-diagram-container");
+            if (currentQ.diagramSvg) {
+                diagramContainer.innerHTML = currentQ.diagramSvg;
+                diagramContainer.classList.remove("hidden");
+            } else {
+                diagramContainer.innerHTML = "";
+                diagramContainer.classList.add("hidden");
+            }
+
+            // Render Options
+            const optionsContainer = document.getElementById("options-container");
+            optionsContainer.innerHTML = "";
+
+            const existingAnswer = state.answers[currentQ.id];
+            const hasAnswered = existingAnswer !== undefined;
+
+            currentQ.options.forEach((optText, optIdx) => {
+                const optBtn = document.createElement("button");
+                optBtn.disabled = hasAnswered;
+
+                let stateClasses = "bg-white border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-blue-50/40";
+                let prefixBadge = "bg-slate-100 text-slate-600 border-slate-200";
+
+                if (hasAnswered) {
+                    if (optIdx === currentQ.answer) {
+                        // Correct option ALWAYS highlights green
+                        stateClasses = "bg-emerald-50 border-emerald-500 text-emerald-950 font-semibold ring-1 ring-emerald-500";
+                        prefixBadge = "bg-emerald-500 text-white border-emerald-600";
+                    } else if (optIdx === existingAnswer) {
+                        // User selected wrong option highlights red
+                        stateClasses = "bg-rose-50 border-rose-500 text-rose-950 font-semibold ring-1 ring-rose-500";
+                        prefixBadge = "bg-rose-500 text-white border-rose-600";
+                    } else {
+                        stateClasses = "bg-slate-50 border-slate-200 text-slate-400 opacity-60";
+                    }
+                }
+
+                optBtn.className = `w-full p-4 rounded-2xl border text-left text-xs sm:text-base flex items-center space-x-3 transition ${stateClasses}`;
+
+                const prefixChar = String.fromCharCode(65 + optIdx); // A, B, C, D
+                optBtn.innerHTML = `
+                    <span class="w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 font-bold text-xs sm:text-sm ${prefixBadge}">
+                        ${prefixChar}
+                    </span>
+                    <span class="flex-1">${optText}</span>
+                `;
+
+                optBtn.onclick = () => {
+                    handleSelectOption(currentQ.id, optIdx);
+                };
+
+                optionsContainer.appendChild(optBtn);
+            });
+
+            // Feedback Box
+            const feedbackBox = document.getElementById("feedback-box");
+            const feedbackIcon = document.getElementById("feedback-icon");
+            const feedbackTitle = document.getElementById("feedback-title");
+            const feedbackExp = document.getElementById("feedback-explanation");
+
+            if (hasAnswered) {
+                feedbackBox.classList.remove("hidden");
+                const isCorrect = (existingAnswer === currentQ.answer);
+
+                if (isCorrect) {
+                    feedbackBox.className = "p-4 rounded-2xl border bg-emerald-50/80 border-emerald-200 text-emerald-900 fade-in";
+                    feedbackIcon.className = "shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-sm bg-emerald-500";
+                    feedbackIcon.innerText = "✓";
+                    feedbackTitle.innerText = "Correct Answer!";
+                } else {
+                    feedbackBox.className = "p-4 rounded-2xl border bg-rose-50/80 border-rose-200 text-rose-900 fade-in";
+                    feedbackIcon.className = "shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-sm bg-rose-500";
+                    feedbackIcon.innerText = "✕";
+                    feedbackTitle.innerText = `Incorrect! Correct choice is Option ${String.fromCharCode(65 + currentQ.answer)}`;
+                }
+
+                feedbackExp.innerText = currentQ.explanation;
+            } else {
+                feedbackBox.classList.add("hidden");
+            }
+
+            // Update Header Stats
+            updateHeaderStats();
+
+            // Prev/Next button states
+            document.getElementById("btn-prev").disabled = (state.currentIndex === 0);
+            document.getElementById("btn-next").disabled = (state.currentIndex === state.shuffledQuestions.length - 1);
+        }
+
+        /**
+         * Handle user selecting an option
+         */
+        function handleSelectOption(qId, choiceIdx) {
+            state.answers[qId] = choiceIdx;
+            saveState();
+            renderCurrentQuestion();
+            renderNavigatorGrid();
+        }
+
+        /**
+         * Update header progress and scores
+         */
+        function updateHeaderStats() {
+            const total = quizData.length;
+            const answeredCount = Object.keys(state.answers).length;
+            
+            let correctCount = 0;
+            state.shuffledQuestions.forEach(q => {
+                if (state.answers[q.id] === q.answer) {
+                    correctCount++;
+                }
+            });
+
+            document.getElementById("progress-text").innerText = `${answeredCount}/${total}`;
+            document.getElementById("score-text").innerText = `${correctCount * 5} pts`;
+
+            const percent = Math.round((answeredCount / total) * 100);
+            document.getElementById("top-progress-bar").style.width = `${percent}%`;
+        }
+
+        /**
+         * Render Summary Modal
+         */
+        function renderSummaryModal() {
+            const total = quizData.length;
+            let correctCount = 0;
+            
+            // Topic wise tally
+            const topicStats = {};
+
+            state.shuffledQuestions.forEach(q => {
+                if (!topicStats[q.topic]) {
+                    topicStats[q.topic] = { correct: 0, total: 0 };
+                }
+                topicStats[q.topic].total++;
+
+                if (state.answers[q.id] === q.answer) {
+                    correctCount++;
+                    topicStats[q.topic].correct++;
+                }
+            });
+
+            const percent = Math.round((correctCount / total) * 100);
+            document.getElementById("modal-score-percent").innerText = `${percent}%`;
+            document.getElementById("modal-score-detail").innerText = `${correctCount} out of ${total} questions answered correctly`;
+
+            const breakdownList = document.getElementById("topic-breakdown-list");
+            breakdownList.innerHTML = "";
+
+            Object.keys(topicStats).forEach(tName => {
+                const stat = topicStats[tName];
+                const topicPct = Math.round((stat.correct / stat.total) * 100);
+
+                const div = document.createElement("div");
+                div.className = "bg-slate-50 border border-slate-200 p-3.5 rounded-2xl";
+                div.innerHTML = `
+                    <div class="flex justify-between items-center mb-1 text-xs sm:text-sm font-semibold text-slate-800">
+                        <span>${tName}</span>
+                        <span class="font-mono text-slate-600">${stat.correct} / ${stat.total} (${topicPct}%)</span>
+                    </div>
+                    <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                        <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: ${topicPct}%"></div>
+                    </div>
+                `;
+                breakdownList.appendChild(div);
+            });
+
+            document.getElementById("summary-modal").classList.remove("hidden");
+        }
+
+        // Event Listeners setup
+        document.addEventListener("DOMContentLoaded", () => {
+            initializeShuffledQuestions();
+            loadState();
+            renderCurrentQuestion();
+            renderNavigatorGrid();
+
+            // Navigation Buttons
+            document.getElementById("btn-prev").onclick = () => {
+                if (state.currentIndex > 0) {
+                    state.currentIndex--;
+                    saveState();
+                    renderCurrentQuestion();
+                    renderNavigatorGrid();
+                }
+            };
+
+            document.getElementById("btn-next").onclick = () => {
+                if (state.currentIndex < state.shuffledQuestions.length - 1) {
+                    state.currentIndex++;
+                    saveState();
+                    renderCurrentQuestion();
+                    renderNavigatorGrid();
+                }
+            };
+
+            // Flag Button
+            document.getElementById("btn-flag").onclick = () => {
+                const currentQ = state.shuffledQuestions[state.currentIndex];
+                if (!currentQ) return;
+
+                state.flagged[currentQ.id] = !state.flagged[currentQ.id];
+                saveState();
+                renderCurrentQuestion();
+                renderNavigatorGrid();
+            };
+
+            // Topic Filter
+            document.getElementById("topic-filter").onchange = (e) => {
+                state.topicFilter = e.target.value;
+                renderNavigatorGrid();
+            };
+
+            // Summary Modal Trigger
+            document.getElementById("btn-show-summary").onclick = renderSummaryModal;
+            document.getElementById("modal-close").onclick = () => {
+                document.getElementById("summary-modal").classList.add("hidden");
+            };
+            document.getElementById("modal-btn-review").onclick = () => {
+                document.getElementById("summary-modal").classList.add("hidden");
+            };
+
+            // Reset Quiz Functionality
+            const handleReset = () => {
+                if (confirm("Are you sure you want to reset all answers and progress?")) {
+                    state.answers = {};
+                    state.flagged = {};
+                    state.currentIndex = 0;
+                    localStorage.removeItem(STORAGE_KEY);
+                    renderCurrentQuestion();
+                    renderNavigatorGrid();
+                    document.getElementById("summary-modal").classList.add("hidden");
+                }
+            };
+
+            document.getElementById("btn-reset").onclick = handleReset;
+            document.getElementById("modal-btn-reset").onclick = handleReset;
+        });
+    </script>
+</body>
+</html>
